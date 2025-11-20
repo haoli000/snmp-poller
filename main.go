@@ -58,6 +58,19 @@ func getPrivProtocol(proto string) gosnmp.SnmpV3PrivProtocol {
 	}
 }
 
+func getMsgFlags(secLevel string) gosnmp.SnmpV3MsgFlags {
+	switch strings.ToLower(secLevel) {
+	case "authpriv":
+		return gosnmp.AuthPriv
+	case "authnopriv":
+		return gosnmp.AuthNoPriv
+	case "noauthnopriv":
+		return gosnmp.NoAuthNoPriv
+	default:
+		return gosnmp.AuthNoPriv
+	}
+}
+
 func main() {
 	// Load .env file if it exists (ignore error if not found)
 	_ = godotenv.Load()
@@ -70,6 +83,8 @@ func main() {
 	authPass := flag.String("auth-passphrase", getEnv("SNMP_AUTH_PASSPHRASE", "your_auth_passphrase"), "Authentication passphrase")
 	privProto := flag.String("priv-protocol", getEnv("SNMP_PRIV_PROTOCOL", "DES"), "Privacy protocol (DES, AES, AES192, AES256, AES192C, AES256C)")
 	privPass := flag.String("priv-passphrase", getEnv("SNMP_PRIV_PASSPHRASE", "your_priv_passphrase"), "Privacy passphrase")
+	secLevel := flag.String("security-level", getEnv("SNMP_SECURITY_LEVEL", "AuthNoPriv"), "Security level (NoAuthNoPriv, AuthNoPriv, AuthPriv)")
+	transport := flag.String("transport", getEnv("SNMP_TRANSPORT", "udp"), "Transport protocol (udp or tcp)")
 	oidsStr := flag.String("oids", getEnv("SNMP_OIDS", "1.3.6.1.2.1.1.1.0,1.3.6.1.2.1.1.3.0"), "Comma-separated list of OIDs to query")
 
 	flag.Parse()
@@ -80,14 +95,15 @@ func main() {
 		log.Fatalf("Invalid port: %v", err)
 	}
 
-	// SNMPv3 authNoPriv parameters (exactly like your snmpwalk)
+	// SNMPv3 parameters
 	gs := &gosnmp.GoSNMP{
 		Target:        *target,
 		Port:          uint16(port),
+		Transport:     *transport,
 		Version:       gosnmp.Version3,
 		Timeout:       time.Duration(10) * time.Second,
 		SecurityModel: gosnmp.UserSecurityModel,
-		MsgFlags:      gosnmp.AuthNoPriv, // or AuthPriv — both work with this config
+		MsgFlags:      getMsgFlags(*secLevel),
 		SecurityParameters: &gosnmp.UsmSecurityParameters{
 			UserName:                 *username,
 			AuthenticationProtocol:   getAuthProtocol(*authProto),

@@ -17,11 +17,13 @@ Configuration can be provided via environment variables or command-line flags. C
    ```bash
    SNMP_TARGET=192.168.1.100
    SNMP_PORT=161
+   SNMP_TRANSPORT=udp
    SNMP_USERNAME=snmpuser
    SNMP_AUTH_PROTOCOL=SHA
    SNMP_AUTH_PASSPHRASE=your_auth_passphrase
    SNMP_PRIV_PROTOCOL=DES
    SNMP_PRIV_PASSPHRASE=your_priv_passphrase
+   SNMP_SECURITY_LEVEL=AuthNoPriv
    SNMP_OIDS=1.3.6.1.2.1.1.1.0,1.3.6.1.2.1.1.3.0
    ```
 
@@ -38,11 +40,13 @@ Override any configuration with command-line flags:
 go run main.go \
   -target=192.168.1.1 \
   -port=161 \
+  -transport=tcp \
   -username=myuser \
   -auth-protocol=SHA256 \
   -auth-passphrase=myauthpass \
   -priv-protocol=AES \
   -priv-passphrase=myprivpass \
+  -security-level=AuthPriv \
   -oids="1.3.6.1.2.1.1.1.0,1.3.6.1.2.1.1.3.0"
 ```
 
@@ -50,11 +54,13 @@ go run main.go \
 
 - `-target`: SNMP target host (default: from env or "192.168.1.100")
 - `-port`: SNMP port (default: from env or "161")
+- `-transport`: Transport protocol - udp or tcp (default: from env or "udp")
 - `-username`: SNMPv3 username (default: from env or "snmpuser")
 - `-auth-protocol`: Authentication protocol - MD5, SHA, SHA224, SHA256, SHA384, SHA512 (default: from env or "SHA")
 - `-auth-passphrase`: Authentication passphrase (default: from env or "your_auth_passphrase")
 - `-priv-protocol`: Privacy protocol - DES, AES, AES192, AES256, AES192C, AES256C (default: from env or "DES")
 - `-priv-passphrase`: Privacy passphrase (default: from env or "your_priv_passphrase")
+- `-security-level`: Security level - NoAuthNoPriv, AuthNoPriv, AuthPriv (default: from env or "AuthNoPriv")
 - `-oids`: Comma-separated list of OIDs to query (default: from env or a set of default OIDs)
 
 ## Build
